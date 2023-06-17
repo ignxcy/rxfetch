@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Copying rxfetch to /usr/bin/rxfetch..."
+sudo cp rxfetch /usr/bin/rxfetch
+echo "Done!"
+exit 0
