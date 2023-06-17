@@ -56,36 +56,6 @@ get_init() {
 	fi
 }
 
-# Get count of packages installed
-get_pkg_count() {
-	package_managers=('xbps-install' 'apk' 'port' 'apt' 'pacman' 'nix' 'dnf' 'rpm' 'emerge' 'eopkg')
-	for package_manager in "${package_managers[@]}"; do
-		if command -v "$package_manager" 2>/dev/null >&2; then
-			case "$package_manager" in
-			xbps-install) xbps-query -l | wc -l ;;
-			apk) apk search | wc -l ;;
-			apt) if [ "$kernel" != "Darwin" ]; then 
-					echo $(($(apt list --installed 2>/dev/null | wc -l) - 1))
-				 else
-					echo 0
-				 fi
-				 ;;
-			pacman) pacman -Q | wc -l ;;
-			nix) nix-env -qa --installed '*' | wc -l ;;
-			dnf) dnf list installed | wc -l ;;
-			rpm) rpm -qa | wc -l ;;
-			emerge) qlist -I | wc -l ;;
-			port) port installed 2>/dev/null | wc -l | awk 'NR==1{print $1}' ;;
-			eopkg) eopkg li | wc -l ;;
-			esac
-
-			# if a package manager is found return from the function
-			return
-		fi
-	done
-	echo 0
-}
-
 # Get count of snaps installed
 get_snap_count() {
 	if command -v snap 2>/dev/null >&2; then
@@ -119,51 +89,12 @@ get_brew_count() {
 
 	echo 0
 }
-
-# Get package information formatted
-get_package_info() {
-	pkg_count=$(get_pkg_count)
-	snap_count=$(get_snap_count)
-	flatpak_count=$(get_flatpak_count)
-	brew_count=$(get_brew_count)
-
-	if [ "$pkg_count" -ne 0 ]; then
-		echo -n "$pkg_count"
-		if [ "$snap_count" -ne 0 ]; then
-			echo -n " ($snap_count snaps"
-			if [ "$flatpak_count" -ne 0 ]; then
-				echo ", $flatpak_count flatpaks)"
-			else
-				echo ")"
-			fi
-		elif [ "$flatpak_count" -ne 0 ]; then
-			echo " ($flatpak_count flatpaks)"
-		elif [ "$brew_count" -ne 0 ]; then
-			cask_count=$(brew list --casks | wc -l | awk 'NR==1{print $1}')
-			formula_count=$(brew list --formula | wc -l | awk 'NR==1{print $1}')
-			echo ", $brew_count brews ($formula_count formulas & $cask_count casks)"
-		else
-			echo ""
-		fi
-	elif [ "$snap_count" -ne 0 ]; then
-		echo -n "$snap_count snaps"
-
-		if [ "$flatpak_count" -ne 0 ]; then
-			echo ", $flatpak_count flatpaks"
-		else
-			echo ""
-		fi
-	elif [ "$flatpak_count" -ne 0 ]; then
-		echo "$flatpak_count flatpaks"
-	elif [ "$brew_count" -ne 0 ]; then
-		cask_count=$(brew list --casks | wc -l | awk 'NR==1{print $1}')
-		formula_count=$(brew list --formula | wc -l | awk 'NR==1{print $1}')
-		echo "$brew_count brews ($formula_count formulas & $cask_count casks)"
-	else
-		echo "Unknown"
-	fi
+# Get the terminal
+get_terminal() {
+  if [ -n "$TERM" ]; then
+    echo $TERM 
+  fi
 }
-
 # Get distro name
 get_distro_name() {
 	if [ "$kernel" = "Android" ]; then
@@ -251,7 +182,7 @@ fi
 
 echo -e "               ${c1}os${c3}     $(get_distro_name) $(uname -m)"
 echo -e "               ${c2}ker${c3}    $(uname -r)"
-echo -e "     ${c3}•${c8}_${c3}•${c0}       ${c7}pkgs${c3}   $(get_package_info)"
+echo -e "     ${c3}•${c8}_${c3}•${c0}       ${c7}term${c3}   $(get_terminal)"
 echo -e "     ${c8}${c0}${c9}oo${c0}${c8}|${c0}       ${c4}sh${c3}     ${SHELL##*/}"
 echo -e "    ${c8}/${c0}${c10} ${c0}${c8}'\'${c0}      ${c6}ram${c3}    $(get_mem)"
 echo -e "   ${c9}(${c0}${c8}\_;/${c0}${c9})${c0}      ${c1}init${c3}   $(get_init)"
