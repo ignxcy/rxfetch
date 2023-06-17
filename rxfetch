@@ -195,5 +195,16 @@ echo -e "               ${c7}up${c3}    $(get_uptime)"
 echo -e "               ${c6}disk${c3}   $(get_storage_info)"
 echo -e "               "
 
+print_color_block() {
+    local color="$1"
+    local text="▅▅▅"
+    printf "\e[48;5;%sm%s\e[0m" "$color" "$text"
+}
+
+
+if [ "$kernel" != Android ] && [ "$kernel" != Darwin ]; then
+  echo -e "${red}$(print_color_block 196)${normal}${yellow}$(print_color_block 226)${normal}${green}$(print_color_block 40)${normal}${cyan}$(print_color_block 51)${normal}${blue}$(print_color_block 27)${normal}${magenta}$(print_color_block 165)${normal}"
+
+fi
 
 echo -e "               \033[0m"
